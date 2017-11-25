@@ -1,5 +1,6 @@
 const { Client } = require("pg");
-const dbConfig = require("./dbConfig.json")
+const dbConfig = require("./dbConfig.json");
+const CHARACTERSTABLE = "characters";
 
 let client;
 
@@ -16,16 +17,20 @@ function connect() {
 }
 
 function end() {
-    client.end().then(
-        () => console.log("client has disconnected"),
-        err => console.error("error during disconnection", err.stack)
-    );
+    try {
+        client.end().then(
+            () => console.log("client has disconnected"),
+            err => console.error("error during disconnection", err.stack)
+        );
+    } catch(err) {
+        console.log(err);
+    }
 }
 
 function insertCharacters(characters) {
     let valsStr = characters.map((character, i) => `($${i + 1})`).join(",");
     let queryText = `\
-        INSERT INTO characters\
+        INSERT INTO ${CHARACTERSTABLE}\
             (name)\
         VALUES ${valsStr}`;
 
@@ -38,7 +43,7 @@ function insertCharacters(characters) {
 function deleteCharacters(characters) {
     let valsStr = characters.map((characters, i) => `$${i + 1}`).join(", ");
     let queryText = `\
-        DELETE FROM characters\
+        DELETE FROM ${CHARACTERSTABLE}\
         WHERE name IN (${valsStr})`;
 
     return runQuery({
@@ -56,5 +61,6 @@ module.exports = {
     end: end,
     insertCharacters: insertCharacters,
     deleteCharacters: deleteCharacters,
-    runQuery: runQuery
+    runQuery: runQuery,
+    CHARACTERSTABLE: CHARACTERSTABLE
 };
